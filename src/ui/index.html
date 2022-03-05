@@ -4,22 +4,423 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Electron & MySQL</title>
-  <link rel="stylesheet" href="bootstrap.min.css">
+  <title>Modern Salon App</title>
+  <script src="https://kit.fontawesome.com/3021e892ed.js" crossorigin="anonymous"></script>
+  <link href="./bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" type="text/css" href="./datatables.min.css"/>
+  <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css"> -->
   <link rel="stylesheet" href="app.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/3.7.2/animate.min.css">
-
 </head>
 
 <body>
 
-  <main class="container-fluid">
-
+  <main class="container-fluid d-none">
     <div class="row">
+      <div class="col col-md-4 col-lg-3 first-col">
+        <div class="logo">
+          <img src="assets/logo.jpg" alt="salon logo">
+        </div>
+        <nav>
+          <ul>
+            <li data-name="home" class="active">Home</li>
+            <li data-name="products">Products</li>
+            <li data-name="branches">Branches</li>
+            <li data-name="map" class="navToMaps">Map Products to branches</li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- HOME SECTION -->
+      <div class="col col-md-8 col-lg-9 sections home">
+        <div class="action-row">
+          <div class="">
+            <button class="btn btn-primary m-1" id="mapProductBtn">map</button>
+            <button class="btn btn-primary m-1" id="printBtn">print</button>
+          </div>
+          <div class="">
+            <p class="m-1">filter by map date</p>
+            <input type="date" name="map_date" id="map_date">
+          </div>
+        </div>
+        <div class="">
+          <table class="table table-striped align-middle" id="homeTable" style="width:100%">
+            <thead>
+              <tr>
+                <td>Product Name</td>
+                <td>Branch Name</td>
+                <td>Map Date</td>
+                <td>Unit Price</td>
+                <td>Quantity</td>
+                <td>Total Amount</td>
+                <td>Updated By</td>
+                <td>Updated Date</td>
+                <td>Created By</td>
+                <td>Created Date</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody class="table-primary"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- PRODUCTS SECTION -->
+      <div class="col col-md-8 col-lg-9 sections products">
+        <div class="action-row">
+          <div class="">
+            <button class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#productModal">add</button>
+          </div>
+        </div>
+        <!-- Product Create Modal -->
+        <div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <form id="productForm">
+                  <div class="form-group mb-2">
+                    <label for="productName">Product Name</label>
+                    <input type="text" class="form-control" name="productName" id="productName" required>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="productCode">Product Code</label>
+                    <input type="text" class="form-control" name="productCode" id="productCode" required>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="productType">Product Type</label>
+                    <input type="text" class="form-control" name="productType" id="productType" required>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="quantity">Quantity</label>
+                    <input type="number" class="form-control" name="quantity" id="quantity" required>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="productPrice">Price</label>
+                    <input type="number" step=".01" class="form-control" name="productPrice" id="productPrice" required>
+                  </div>
+                  <div class="form-group mb-2">
+                    <label for="createdBy">Created By</label>
+                    <input type="text" class="form-control" name="createdBy" id="createdBy" required>
+                  </div>
+                </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+                <button type="button" class="btn btn-primary" id="productFormSubmitBtn">Add</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="">
+          <table class="table table-striped align-middle" id="productTable" style="width:100%">
+            <thead>
+              <tr>
+                <td>Product Name</td>
+                <td>Product Code</td>
+                <td>Product Type</td>
+                <td>Product Price</td>
+                <td>Quantity</td>
+                <td>Updated By</td>
+                <td>Updated Date</td>
+                <td>Created By</td>
+                <td>Created Date</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody class="table-primary"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- BRANCHES SECTION -->
+    <div class="col col-md-8 col-lg-9 sections branches">
+      <div class="action-row">
+        <div class="">
+          <button class="btn btn-primary m-1" data-bs-toggle="modal" data-bs-target="#branchesModal">add</button>
+        </div>
+      </div>
+      <!-- Branches Create Modal -->
+      <div class="modal fade" id="branchesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">Add a branch</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form id="branchForm">
+                <div class="form-group mb-2">
+                  <label for="branchName">Branch Name</label>
+                  <input type="text" class="form-control" name="branchName" id="branchName" required>
+                </div>
+                <div class="form-group mb-2">
+                  <label for="branchCode">Branch Code</label>
+                  <input type="text" class="form-control" name="branchCode" id="branchCode" required>
+                </div>
+                <div class="form-group mb-2">
+                  <label for="address">Address</label>
+                  <input type="text" class="form-control" name="address" id="address" required>
+                </div>
+                <div class="form-group mb-2">
+                  <label for="contactNumber">Contact Number</label>
+                  <input type="tel" class="form-control" name="contactNumber" id="contactNumber" required>
+                </div>
+                <div class="form-group mb-2">
+                  <label for="createdBy">Created By</label>
+                  <input type="text" class="form-control" name="createdBy" id="createdBy" required>
+                </div>
+              </form>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+              <button type="button" class="btn btn-primary" id="branchFormSubmitBtn">Add</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="">
+        <table class="table table-striped align-middle" id="branchesTable" style="width:100%">
+          <thead>
+            <tr>
+              <td>Branch Name</td>
+              <td>Branch Code</td>
+              <td>Address</td>
+              <td>Contact Number</td>
+              <td>Updated By</td>
+              <td>Updated Date</td>
+              <td>Created By</td>
+              <td>Created Date</td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody class="table-primary"></tbody>
+        </table>
+      </div>
+    </div>
+
+      <!-- MAPPING SECTION -->
+      <div class="col col-md-8 col-lg-9 sections map">
+        <div class="">
+          <h4>Map Products to Branches</h4>
+        </div>        
+        <div class="">
+          <table class="table table-striped align-middle" id="mappingTable" style="width:100%">
+            <thead>
+              <tr>
+                <td>Product</td>
+                <td>Branch</td>
+                <td>Last Updated</td>
+                <td></td>
+              </tr>
+            </thead>
+            <tbody class="table-primary"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- DELETE Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Add Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Are you sure you want to carry on with this action?</p>
+          <p class="text-italic text-danger">Click proceed to continue.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="deleteModalBtn">Proceed</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAPPING Modal -->
+  <div class="modal fade" id="mappingModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Map Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="mappingForm">
+            <div class="form-group mb-2">
+              <label for="productToMap">Product</label>
+              <input type="text" class="form-control" name="product" id="productToMap" required readonly>
+              <p class="form-text">To change product name, search for this product on the products page</p>
+            </div>
+            <div class="form-group">
+              <label for="selectBranchToMap">Select Branch</label>
+              <select class="form-select" name="branch" id="selectBranchToMap" required>
+                <option>---</option>
+              </select>
+            </div>
+            <div class="form-group mb-2">
+              <label for="unitPrice">Unit Price</label>
+              <input type="text" class="form-control" name="unitPrice" id="unitPrice" required readonly>
+              <p class="form-text">To change product price, search for this product on the products page</p>
+            </div>
+            <div class="form-group mb-2">
+              <label for="quantity">Quantity</label>
+              <input type="number" class="form-control" name="quantity" id="quantity" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="createdBy">Created By</label>
+              <input type="text" class="form-control" name="createdBy" id="createdBy" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="mappingModalBtn">Map</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- MAPPING Edit Modal -->
+  <div class="modal fade" id="mappingEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Map Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="mappingEditForm">
+            <div class="form-group mb-2">
+              <label for="productToMap">Product</label>
+              <input type="text" class="form-control" name="product" id="editProductToMap" required readonly>
+              <p class="form-text">To change product name, search for this product on the products page</p>
+            </div>
+            <div class="form-group">
+              <label for="selectBranchToMap">Select Branch</label>
+              <select class="form-select" name="branch" id="editSelectBranchToMap" required>
+                <option>---</option>
+              </select>
+            </div>
+            <div class="form-group mb-2">
+              <label for="unitPrice">Unit Price</label>
+              <input type="text" class="form-control" name="unitPrice" id="editUnitPrice" required readonly>
+              <p class="form-text">To change product price, search for this product on the products page</p>
+            </div>
+            <div class="form-group mb-2">
+              <label for="quantity">Quantity</label>
+              <input type="number" class="form-control" name="quantity" id="editMappedQuantity" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="updatedBy">Updated By</label>
+              <input type="text" class="form-control" name="updatedBy" id="editMappedUpdatedBy" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" id="mappingEditModalBtn">Map</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Branches Edit Modal -->
+  <div class="modal fade" id="branchesEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit branch</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="branchEditForm">
+            <div class="form-group mb-2">
+              <label for="editBranchName">Branch Name</label>
+              <input type="text" class="form-control" name="branchName" id="editBranchName" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editBranchCode">Branch Code</label>
+              <input type="text" class="form-control" name="branchCode" id="editBranchCode" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editAddress">Address</label>
+              <input type="text" class="form-control" name="address" id="editAddress" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editContactNumber">Contact Number</label>
+              <input type="tel" class="form-control" name="contactNumber" id="editBranchContactNumber" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editUpdatedBy">Updated By</label>
+              <input type="text" class="form-control" name="updatedBy" id="editBranchUpdatedBy" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary" id="branchEditFormSubmitBtn">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- Product Create Modal -->
+  <div class="modal fade" id="productEditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalLabel">Edit Product</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form id="productEditForm">
+            <div class="form-group mb-2">
+              <label for="editProductName">Product Name</label>
+              <input type="text" class="form-control" name="productName" id="editProductName" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editProductCode">Product Code</label>
+              <input type="text" class="form-control" name="productCode" id="editProductCode" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editProductType">Product Type</label>
+              <input type="text" class="form-control" name="productType" id="editProductType" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editQuantity">Quantity</label>
+              <input type="number" class="form-control" name="quantity" id="editProductQuantity" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editProductPrice">Price</label>
+              <input type="number" step=".01" class="form-control" name="productPrice" id="editProductPrice" required>
+            </div>
+            <div class="form-group mb-2">
+              <label for="editUpdatedBy">Updated By</label>
+              <input type="text" class="form-control" name="updatedBy" id="editProductUpdatedBy" required>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" >Close</button>
+          <button type="button" class="btn btn-primary" id="productEditFormSubmitBtn">Update</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+    <!-- <div class="row">
 
       <div class="col-md-6 p-4 my-auto">
 
-        <!-- Product Form -->
+        <!- Product Form --
         <form id="productForm" class="card card-body">
           <div class="form-group">
             <input type="text" id="name" placeholder="Product's Name" class="form-control" autofocus>
@@ -37,16 +438,23 @@
 
       </div>
 
-      <!-- Product List -->
+      <!- Product List --
       <div class="col-md-6">
         <div id="products"></div>
       </div>
-    </div>
+    </div> -->
 
   </main>
-
+  <script>window.$ = window.jQuery = require('jquery');</script>
+  <script type="text/javascript" src="./bootstrap.bundle.min.js"></script>
+  <script type="text/javascript" src="./datatables.min.js"></script>
+  <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script> -->
   <script src="./app.js"></script>
 
+  <script>
+    
+
+  </script>
 </body>
 
 </html>
