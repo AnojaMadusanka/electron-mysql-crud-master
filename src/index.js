@@ -1,6 +1,5 @@
 const { createWindow } = require("./main");
 const { app, BrowserWindow } = require("electron");
-
 require('./database');
 
 const path = require('path')
@@ -14,15 +13,20 @@ if (env === 'development') {
     });
 }
 
+let win;
+
 app.allowRendererProcessReuse = true;
+app.disableHardwareAcceleration();
 
 app.whenReady().then(() => {
-    createWindow()
+    win = createWindow();
   
     app.on('activate', function () {
-      if (BrowserWindow.getAllWindows().length === 0) createWindow()
-    })
-})
+      if (BrowserWindow.getAllWindows().length === 0) win = createWindow();
+    });
+
+    // require('@electron/remote/main').enable(win.webContents);
+});
 
 app.on("window-all-closed", () => {
     if (process.platform !== "darwin") {

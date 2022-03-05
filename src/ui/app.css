@@ -17,10 +17,11 @@ button.btn {
 
 .first-col {
   height: 100%;
+  /* position: fixed; */
 }
 
 .logo {
-  margin-bottom: 1rem;
+  padding-bottom: 1rem;
   padding: 1rem;
   border-bottom: 2px solid black;
 }
@@ -36,7 +37,7 @@ nav ul {
 
 nav ul li {
   list-style: none;
-  margin-bottom: 1rem;
+  padding-bottom: 1rem;
   padding: 1rem;
   border-bottom: 2px solid black;
   cursor: pointer;
@@ -59,6 +60,9 @@ nav ul li.active {
   display: flex;
 }
 
+table.table {
+  /* margin-top: 1rem; */
+}
 .table thead {
   color: white;
   background-color: #00008b !important;
@@ -79,4 +83,9 @@ i.fa {
 
 i.fa.fa-trash-can {
   color: rgb(224, 5, 5);
+}
+
+/* EDIT DATATABLES VIEW */
+.dataTables_length, .dataTables_filter {
+  margin-bottom: 0.5em;
 }
