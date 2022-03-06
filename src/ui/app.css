@@ -60,9 +60,6 @@ nav ul li.active {
   display: flex;
 }
 
-table.table {
-  /* margin-top: 1rem; */
-}
 .table thead {
   color: white;
   background-color: #00008b !important;
@@ -75,13 +72,15 @@ table.table {
 
 
 /* FOR ICONS */
-i.fa {
+img.fa {
   margin: 1rem;
   cursor: pointer;
   color: #00008b;
+  width: 20px;
+  height: 20px;
 }
 
-i.fa.fa-trash-can {
+img.fa.trash-can {
   color: rgb(224, 5, 5);
 }
 

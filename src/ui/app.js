@@ -1,5 +1,9 @@
 const { ipcRenderer } = require("electron");
-const { jsPDF } = require("jspdf");
+const electron = require('electron');
+const path = require('path');
+const fs = require('fs');
+const { jsPDF } = require('jspdf');
+require('jspdf-autotable');
 
 $(() => {
   let activeAction; //Used to manage the edit and delete operation (the action to be carried out, sets on click)
@@ -12,6 +16,22 @@ $(() => {
     let mappingDataTable;
 
     let productNameToBeMapped;
+
+    const formatTime = (timeStamp, skipTime=false) => {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+      let formattedTime = '';
+      const day = new Date(Number(timeStamp));
+      formattedTime += `${dayNames[day.getDay()]}, ${day.getDate()} of ${monthNames[day.getMonth()]} ${day.getFullYear()}\n`;
+      if (!skipTime) {
+        const hours = day.getHours() < 10 ? `0${day.getHours()}` : day.getHours();
+        const minutes = day.getMinutes() < 10 ? `0${day.getMinutes()}` : day.getMinutes();
+        const seconds = day.getSeconds() < 10 ? `0${day.getSeconds()}` : day.getSeconds();
+        formattedTime += `${hours}:${minutes}:${seconds}`;
+      }
+      
+      return formattedTime;
+    }
 
     let openSection = (sectionClassName, clickedNavItem) => {
       $('.sections').hide();
@@ -131,6 +151,7 @@ $(() => {
       productDataTable.clear();
       result.forEach(elem => {
         elem.actionCell = `<td>
+        
           <i class="fa fa-solid fa-pen" role="button" data-id="${elem.id}" data-action="edit" data-type="product" data-bs-toggle="modal" data-bs-target="#productEditModal"></i>
           <i class="fa fa-solid fa-trash-can" role="button" data-id="${elem.id}" data-action="delete" data-type="product" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
         </td>`;
@@ -183,8 +204,8 @@ $(() => {
           let elemValue = inputElem.value;
           branchData[elemName] = elemValue;
         });
-        branchData['createdDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
-        branchData['updatedDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        branchData['createdDate'] = today.getTime();
+        branchData['updatedDate'] = branchData.createdDate;
         branchData['updatedBy'] = branchData.createdBy;
         let result = await ipcRenderer.invoke('createBranch', branchData);
         branchForm.reset();
@@ -207,8 +228,8 @@ $(() => {
           let elemValue = inputElem.value;
           productData[elemName] = elemValue;
         });
-        productData['createdDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
-        productData['updatedDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        productData['createdDate'] = today.getTime();
+        productData['updatedDate'] = productData.createdDate;
         productData['updatedBy'] = productData.createdBy;
         let result = await ipcRenderer.invoke('createProduct', productData);
         productForm.reset();
@@ -231,7 +252,7 @@ $(() => {
           let elemValue = inputElem.value;
           branchData[elemName] = elemValue;
         });
-        branchData['updatedDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        branchData['updatedDate'] = today.getTime();
         let result = await ipcRenderer.invoke('updateBranch', activeID, branchData);
       }
     });
@@ -246,7 +267,7 @@ $(() => {
           let elemValue = inputElem.value;
           productData[elemName] = elemValue;
         });
-        productData['updatedDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        productData['updatedDate'] = today.getTime();
         let result = await ipcRenderer.invoke('updateProduct', activeID, productData);
       }
     });
@@ -263,20 +284,24 @@ $(() => {
         });
         mappedData.branch = document.getElementById("editSelectBranchToMap").value;
         mappedData['totalAmount'] = Math.round(mappedData.unitPrice * mappedData.quantity).toFixed(2);
-        mappedData['updatedDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        mappedData['updatedDate'] = today.getTime();
         let result = await ipcRenderer.invoke('updateMappedProduct', activeID, mappedData);
       }
     });
 
     getProducts().then(products => {
+
+      console.log(products);
       
       products = products.map((elem) => {
         elem.actionCell = `
           <td>
-            <i class="fa fa-solid fa-pen" role="button" data-id="${elem.id}" data-action="edit" data-type="product" data-bs-toggle="modal" data-bs-target="#productEditModal"></i>
-            <i class="fa fa-solid fa-trash-can" role="button" data-id="${elem.id}" data-action="delete" data-type="product" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
+            <img class="fa" src="./svg/pen.svg" role="button" data-id="${elem.id}" data-action="edit" data-type="product" data-bs-toggle="modal" data-bs-target="#productEditModal">
+            <img class="fa trash-can" src="./svg/trash.svg" role="button" data-id="${elem.id}" data-action="delete" data-type="product" data-bs-toggle="modal" data-bs-target="#deleteModal">
           </td>
         `;
+        elem.updatedDate = formatTime(elem.updatedDate);
+        elem.createdDate = formatTime(elem.createdDate);
         return elem;
       });
 
@@ -306,10 +331,12 @@ $(() => {
       branches = branches.map((elem) => {
         elem.actionCell = `
           <td>
-            <i class="fa fa-solid fa-pen" role="button" data-id="${elem.id}" data-action="edit" data-type="branch" data-bs-toggle="modal" data-bs-target="#branchesEditModal"></i>
-            <i class="fa fa-solid fa-trash-can" role="button" data-id="${elem.id}" data-action="delete" data-type="branch" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
+            <img class="fa" src="./svg/pen.svg" role="button" data-id="${elem.id}" data-action="edit" data-type="branch" data-bs-toggle="modal" data-bs-target="#branchesEditModal">
+            <img class="fa trash-can" src="./svg/trash.svg" role="button" data-id="${elem.id}" data-action="delete" data-type="branch" data-bs-toggle="modal" data-bs-target="#deleteModal">
           </td>
         `;
+        elem.updatedDate = formatTime(elem.updatedDate);
+        elem.createdDate = formatTime(elem.createdDate);
         return elem;
       });
 
@@ -338,10 +365,13 @@ $(() => {
       mappedProducts = mappedProducts.map((elem) => {
         elem.actionCell = `
           <td>
-            <i class="fa fa-solid fa-pen" role="button" data-id="${elem.id}" data-action="edit" data-type="mapped" data-bs-toggle="modal" data-bs-target="#mappingEditModal"></i>
-            <i class="fa fa-solid fa-trash-can" role="button" data-id="${elem.id}" data-action="delete" data-type="mapped" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
+            <img class="fa" src="./svg/pen.svg" role="button" data-id="${elem.id}" data-action="edit" data-type="mapped" data-bs-toggle="modal" data-bs-target="#mappingEditModal">
+            <img class="fa trash-can" src="./svg/trash.svg" role="button" data-id="${elem.id}" data-action="delete" data-type="mapped" data-bs-toggle="modal" data-bs-target="#deleteModal">
           </td>
         `;
+        elem.updatedDate = formatTime(elem.updatedDate);
+        elem.createdDate = formatTime(elem.createdDate);
+        elem.mapDate = formatTime(elem.mapDate);
         return elem;
       });
 
@@ -376,6 +406,8 @@ $(() => {
               <button data-price="${elem.productPrice}" data-name="${elem.productName}" class="changeMappingBtn" data-bs-toggle="modal" data-bs-target="#mappingModal">change mapping</button>
             </td>
           `;
+          elem.updatedDate = formatTime(elem.updatedDate);
+          // elem.createdDate = formatTime(elem.createdDate);
           return elem;
         }
       });
@@ -386,7 +418,7 @@ $(() => {
         "columns": [
             { "data": "productName" },
             { "data": "branchName" },
-            { "data": "createdDate" },
+            { "data": "updatedDate" },
             { "data": "actionCell" }
         ]
       });
@@ -418,7 +450,7 @@ $(() => {
           mappingData[elemName] = elemValue;
         });
         mappingData['branch'] = $("#selectBranchToMap").val();
-        mappingData['createdDate'] = `${today.getFullYear()}-${(today.getMonth()+1)}-${today.getDate()}`;
+        mappingData['createdDate'] = today.getTime();
         mappingData['updatedDate'] = mappingData.createdDate;
         mappingData['mapDate'] = mappingData.createdDate;
         mappingData['updatedBy'] = mappingData.createdBy;
@@ -431,24 +463,62 @@ $(() => {
     });
 
   $("#map_date").on('change', (ev) => {
-    mappedDataTable.column(4).search($('#map_date').val(), true, true).draw();
-    console.log($("#homeTable").html());
+    const day = new Date($('#map_date').val()).getTime();
+    $("#homeTable_filter input").val(day ? formatTime(day, true) : ''); //This changes the value of the input field responsible for the search function
+    $("#homeTable_filter input").trigger('keyup');  //trigger keyup event to initiate search action
   });
 
   $("#printBtn").on("click", (ev) => {
-    const doc = new jsPDF({
-      orientation: "landscape",
-    });
-    
-    doc.html($("#homeTable").html(), {
-      callback: function (doc) {
-        console.log("saving");
-        doc.save();
-        console.log("saved");
+    const doc = new jsPDF(
+      {
+        orientation: "landscape",
       }
-    });
+    );
+    
+    doc.autoTable({ html: '#homeTable' });
+
+    doc.save('report.pdf');
+    console.log('done');
     
   });
+
+//   const BrowserWindow = electron.remote.BrowserWindow;
+  
+// var convert = document.getElementById('convert');
+// var filepath2 = path.join(__dirname, '../assets/print2.pdf'); 
+  
+// var options2 = {
+//     marginsType: 1,
+//     pageSize: 'A4',
+//     printBackground: true,
+//     printSelectionOnly: false,
+//     landscape: false
+// }
+  
+// convert.addEventListener('click', (event) => {
+//     let win = new BrowserWindow({
+//         show: false,
+//         webPreferences: {
+//           nodeIntegration: true
+//         }
+//       });
+  
+//     win.loadURL('https://www.google.com/');
+  
+//     win.webContents.on('did-finish-load', () => {
+//         win.webContents.printToPDF(options2).then(data => {
+//             fs.writeFile(filepath2, data, function (err) {
+//                 if (err) {
+//                     console.log(err);
+//                 } else {
+//                     console.log('PDF Generated Successfully');
+//                 }
+//             });
+//         }).catch(error => {
+//             console.log(error)
+//         });
+//     });
+// });
 
     // $("#homeTable").DataTable();
 
@@ -471,3 +541,5 @@ $(() => {
     //   $("#productTable tbody").append(productRowMockUp);
     // });
 });
+
+module.exports = {};

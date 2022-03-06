@@ -17,6 +17,8 @@ ipcMain.handle('createProduct', async (event, product) => {
       body: "New Product Saved Successfully",
     }).show();
 
+    window.reload();
+
     // Return the created Product
     return product;
   } catch (error) {
@@ -35,6 +37,8 @@ ipcMain.handle('createBranch', async (event, branch) => {
       title: "Success",
       body: "New Branch Saved Successfully",
     }).show();
+
+    window.reload();
 
     // Return the created Product
     return branch;
@@ -166,10 +170,20 @@ ipcMain.handle('updateMappedProduct', async (event, id, mapped_product) => {
   window.reload();
 });
 
+// ipcMain.handle('printReport', (ev, htmlContent) => {
+//   const doc = new jsPDF({
+//     orientation: "landscape",
+//   });
+  
+//   doc.autoTable({ html: '#homeTable' });
+
+//   doc.save('report.pdf');
+// });
+
 function createWindow() {
   window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1200,
+    height: 800,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,

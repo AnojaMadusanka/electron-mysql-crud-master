@@ -16,6 +16,7 @@
     "electron-reload": "^1.5.0",
     "jquery": "^3.6.0",
     "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.23",
     "mysql2": "^2.1.0",
     "promise-mysql": "^4.1.3"
   }
