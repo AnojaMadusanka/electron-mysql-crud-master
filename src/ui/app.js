@@ -1,9 +1,10 @@
 const { ipcRenderer } = require("electron");
-const electron = require('electron');
-const path = require('path');
-const fs = require('fs');
-const { jsPDF } = require('jspdf');
-require('jspdf-autotable');
+const { v4: uuidv4 } = require('uuid');
+// const electron = require('electron');
+// const path = require('path');
+// const fs = require('fs');
+// const { jsPDF } = require('jspdf');
+// require('jspdf-autotable');
 
 $(() => {
   let activeAction; //Used to manage the edit and delete operation (the action to be carried out, sets on click)
@@ -41,6 +42,15 @@ $(() => {
         clickedNavItem.addClass('active');
       }
       $('main').removeClass('d-none');
+      if (sectionClassName === 'products') {
+        productDataTable.columns.adjust().draw();
+      }else if (sectionClassName === 'branches') {
+        branchesDataTable.columns.adjust().draw();
+      }else if (sectionClassName === 'map') {
+        mappingDataTable.columns.adjust().draw();
+      } else {
+        if (mappedDataTable) mappedDataTable.columns.adjust().draw();
+      }
     };
 
     openSection('home');
@@ -57,7 +67,7 @@ $(() => {
     $("#mapProductBtn").on("click", (event) => openSection('map', $(".navToMaps")));
 
     const addListenersOnRowIcons = () => {
-      $("i.fa").each((index, icon) => {
+      $("img.fa").each((index, icon) => {
         $(icon).on("click", ev => {
           const elem = $(icon);
           activeAction = elem.attr('data-action');
@@ -143,7 +153,6 @@ $(() => {
 
     const editProduct = async (id, product) => {
       let result = await ipcRenderer.invoke('updateProduct', id, product);
-      console.log(`Product with id of ${id} edited successfully`);
     };
 
     const deleteProduct = async (id) => {
@@ -158,7 +167,6 @@ $(() => {
         productDataTable.row.add(elem).draw(false);
       });
       addListenersOnRowIcons();
-      console.log(`Product with id of ${id} deleted successfully`);
     };
 
     const deleteMappedProduct = async (id) => {
@@ -167,7 +175,6 @@ $(() => {
 
     const editBranch = async (id, branch) => {
       let result = await ipcRenderer.invoke('updateBranch', id, branch);
-      console.log(`Branch with id of ${id} edited successfully`);
     };
 
     const deleteBranch = async (id) => {
@@ -181,7 +188,6 @@ $(() => {
         branchesDataTable.row.add(elem).draw(false);
       });
       addListenersOnRowIcons();
-      console.log(`Branch with id of ${id} deleted successfully`);
     };
     
     const decipherAction = () => {
@@ -197,6 +203,7 @@ $(() => {
     $("#branchFormSubmitBtn").on("click", async (ev) => {
       const branchForm = document.getElementById("branchForm");
       if (branchForm.reportValidity()) {
+        $("#branchFormSubmitBtn").prop("disabled", true);
         const today = (new Date());
         let branchData = {};
         $("#branchForm input").each((index, inputElem) => {
@@ -207,20 +214,14 @@ $(() => {
         branchData['createdDate'] = today.getTime();
         branchData['updatedDate'] = branchData.createdDate;
         branchData['updatedBy'] = branchData.createdBy;
-        let result = await ipcRenderer.invoke('createBranch', branchData);
-        branchForm.reset();
-        $("#branchesModal").modal('hide');
-        result.actionCell = `<td>
-          <i class="fa fa-solid fa-pen" role="button" data-id="${result.id}" data-action="edit" data-type="branch" data-bs-toggle="modal" data-bs-target="#branchesEditModal"></i>
-          <i class="fa fa-solid fa-trash-can" role="button" data-id="${result.id}" data-action="delete" data-type="branch" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
-        </td>`;
-        branchesDataTable.row.add(result).draw(false);
+        await ipcRenderer.invoke('createBranch', branchData);
       }
     });
 
     $("#productFormSubmitBtn").on("click", async (ev) => {
       const productForm = document.getElementById("productForm");
       if (productForm.reportValidity()) {
+        $("#productFormSubmitBtn").prop("disabled", true);
         const today = (new Date());
         let productData = {};
         $("#productForm input").each((index, inputElem) => {
@@ -228,23 +229,18 @@ $(() => {
           let elemValue = inputElem.value;
           productData[elemName] = elemValue;
         });
+        productData['productCode'] = uuidv4();
         productData['createdDate'] = today.getTime();
         productData['updatedDate'] = productData.createdDate;
         productData['updatedBy'] = productData.createdBy;
-        let result = await ipcRenderer.invoke('createProduct', productData);
-        productForm.reset();
-        $("#productModal").modal('hide');
-        result.actionCell = `<td>
-          <i class="fa fa-solid fa-pen" role="button" data-id="${result.id}" data-action="edit" data-type="product" data-bs-toggle="modal" data-bs-target="#productEditModal"></i>
-          <i class="fa fa-solid fa-trash-can" role="button" data-id="${result.id}" data-action="delete" data-type="product" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
-        </td>`;
-        productDataTable.row.add(result).draw(false);
+        await ipcRenderer.invoke('createProduct', productData);
       }
     });
 
     $("#branchEditFormSubmitBtn").on("click", async (ev) => {
       const branchForm = document.getElementById("branchEditForm");
       if (branchForm.reportValidity()) {
+        $("#branchEditFormSubmitBtn").prop("disabled", true);
         const today = (new Date());
         let branchData = {};
         $("#branchEditForm input").each((index, inputElem) => {
@@ -260,6 +256,7 @@ $(() => {
     $("#productEditFormSubmitBtn").on("click", async (ev) => {
       const productForm = document.getElementById("productEditForm");
       if (productForm.reportValidity()) {
+        $("#productEditFormSubmitBtn").prop("disabled", true);
         const today = (new Date());
         let productData = {};
         $("#productEditForm input").each((index, inputElem) => {
@@ -275,6 +272,7 @@ $(() => {
     $("#mappingEditModalBtn").on("click", async (ev) => {
       const mappingForm = document.getElementById("mappingEditForm");
       if (mappingForm.reportValidity()) {
+        $("#mappingEditModalBtn").prop("disabled", true);
         const today = (new Date());
         let mappedData = {};
         $("#mappingEditForm input").each((index, inputElem) => {
@@ -308,17 +306,17 @@ $(() => {
       productDataTable = $('#productTable').DataTable( {
         "data": products,
         "aaSorting": [],
+        "ordering": false,
         "columns": [
-            { "data": "productName" },
-            { "data": "productCode" },
-            { "data": "productType" },
-            { "data": "productPrice" },
-            { "data": "quantity" },
-            { "data": "updatedBy" },
-            { "data": "updatedDate" },
-            { "data": "createdBy" },
-            { "data": "createdDate" },
-            { "data": "actionCell" }
+          { "data": "productName" },
+          { "data": "productCode" },
+          { "data": "productCategory" },
+          { "data": "productPrice" },
+          { "data": "updatedBy" },
+          { "data": "updatedDate" },
+          { "data": "createdBy" },
+          { "data": "createdDate" },
+          { "data": "actionCell" }
         ],
         "scrollY": 400,
         "scrollX": true,
@@ -343,6 +341,7 @@ $(() => {
       branchesDataTable = $('#branchesTable').DataTable( {
         "data": branches,
         "aaSorting": [],
+        "ordering": false,
         "columns": [
             { "data": "branchName" },
             { "data": "branchCode" },
@@ -378,8 +377,9 @@ $(() => {
       mappedDataTable = $('#homeTable').DataTable( {
         "data": mappedProducts,
         "aaSorting": [],
+        "ordering": false,
         "columns": [
-            { "data": "product" },
+            { "data": "product"},
             { "data": "branch" },
             { "data": "mapDate" },
             { "data": "unitPrice" },
@@ -415,6 +415,7 @@ $(() => {
       mappingDataTable = $('#mappingTable').DataTable( {
         "data": products,
         "aaSorting": [],
+        "ordering": false,
         "columns": [
             { "data": "productName" },
             { "data": "branchName" },
@@ -442,6 +443,7 @@ $(() => {
     $("#mappingModalBtn").on("click", async (ev) => {
       const mappingForm = document.getElementById("mappingForm");
       if(mappingForm.reportValidity()) {
+        $("#mappingModalBtn").prop("disabled", true);
         const today = (new Date());
         let mappingData = {};
         $("#mappingForm input").each((index, inputElem) => {
@@ -455,7 +457,6 @@ $(() => {
         mappingData['mapDate'] = mappingData.createdDate;
         mappingData['updatedBy'] = mappingData.createdBy;
         mappingData['totalAmount'] = Math.round(mappingData.unitPrice * mappingData.quantity).toFixed(2);
-        console.log(mappingData);
         let result = await ipcRenderer.invoke('mapProductToBranch', mappingData);
         mappingForm.reset();
         $("#mappingModal").modal('hide');
@@ -469,77 +470,20 @@ $(() => {
   });
 
   $("#printBtn").on("click", (ev) => {
-    const doc = new jsPDF(
-      {
-        orientation: "landscape",
-      }
-    );
+    // const doc = new jsPDF( {
+    //   orientation: "landscape",
+    // });
     
-    doc.autoTable({ html: '#homeTable' });
+    // doc.autoTable({ html: '#homeTable' });
 
-    doc.save('report.pdf');
-    console.log('done');
+    // doc.save('report.pdf');
+    // console.log('done');
+
+    const searchString = $("#homeTable_filter input").val();
+    if (searchString) ipcRenderer.invoke('printReport', (ev, searchString));
     
   });
 
-//   const BrowserWindow = electron.remote.BrowserWindow;
-  
-// var convert = document.getElementById('convert');
-// var filepath2 = path.join(__dirname, '../assets/print2.pdf'); 
-  
-// var options2 = {
-//     marginsType: 1,
-//     pageSize: 'A4',
-//     printBackground: true,
-//     printSelectionOnly: false,
-//     landscape: false
-// }
-  
-// convert.addEventListener('click', (event) => {
-//     let win = new BrowserWindow({
-//         show: false,
-//         webPreferences: {
-//           nodeIntegration: true
-//         }
-//       });
-  
-//     win.loadURL('https://www.google.com/');
-  
-//     win.webContents.on('did-finish-load', () => {
-//         win.webContents.printToPDF(options2).then(data => {
-//             fs.writeFile(filepath2, data, function (err) {
-//                 if (err) {
-//                     console.log(err);
-//                 } else {
-//                     console.log('PDF Generated Successfully');
-//                 }
-//             });
-//         }).catch(error => {
-//             console.log(error)
-//         });
-//     });
-// });
-
-    // $("#homeTable").DataTable();
-
-    // getProducts().then(products => {
-      
-    //   let productRowMockUp = '';
-    //   products.forEach((elem) => {
-    //     productRowMockUp += `
-    //     <tr>
-    //       <td>${elem.productName}</td>
-    //       <td>${elem.productCode}</td>
-    //       <td>${elem.productType}</td>
-    //       <td>
-    //         <i class="fa fa-solid fa-pen" role="button" data-id="${elem.id}" data-action="edit" data-type="product" data-bs-toggle="modal" data-bs-target="#editModal"></i>
-    //         <i class="fa fa-solid fa-trash-can" role="button" data-id="${elem.id}" data-action="delete" data-type="product" data-bs-toggle="modal" data-bs-target="#deleteModal"></i>
-    //       </td>
-    //     </tr>
-    //     `;
-    //   });
-    //   $("#productTable tbody").append(productRowMockUp);
-    // });
 });
 
 module.exports = {};

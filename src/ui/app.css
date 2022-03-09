@@ -64,10 +64,17 @@ nav ul li.active {
   color: white;
   background-color: #00008b !important;
   font-weight: 700;
+  /* width: 400px !important; */
 }
 
 .table tbody {
   color: rgba(26, 5, 117, 0.966) !important;
+}
+
+.dataTable td {
+  /* word-break: keep-all; */
+  white-space: nowrap;
+  width: 100px;
 }
 
 

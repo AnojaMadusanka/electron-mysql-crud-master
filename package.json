@@ -5,19 +5,22 @@
   "main": "src/index.js",
   "scripts": {
     "start": "electron .",
-    "start:dev": "set NODE_ENV=development&&electron ."
+    "start:dev": "set NODE_ENV=development&&electron --trace-warnings ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@electron/remote": "^2.0.5",
+    "easyinvoice": "^2.3.0",
     "electron": "^17.1.0",
-    "electron-reload": "^1.5.0",
     "jquery": "^3.6.0",
-    "jspdf": "^2.5.1",
-    "jspdf-autotable": "^3.5.23",
     "mysql2": "^2.1.0",
-    "promise-mysql": "^4.1.3"
+    "promise-mysql": "^4.1.3",
+    "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "electron-rebuild": "^3.2.7",
+    "electron-reload": "^1.5.0"
   }
 }
